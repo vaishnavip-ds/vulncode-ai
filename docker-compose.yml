@@ -1,0 +1,35 @@
+services:
+  api:
+    build: .
+    environment:
+      VULNCODE_ENVIRONMENT: development
+      VULNCODE_DATABASE_URL: postgresql+asyncpg://vulncode:vulncode@postgres:5432/vulncode
+      VULNCODE_WEBHOOK_SECRET: ${VULNCODE_WEBHOOK_SECRET}
+      VULNCODE_INGEST_TOKEN: ${VULNCODE_INGEST_TOKEN}
+      VULNCODE_API_TOKEN: ${VULNCODE_API_TOKEN}
+      VULNCODE_GITHUB_APP_ID: ${VULNCODE_GITHUB_APP_ID:-}
+      VULNCODE_GITHUB_PRIVATE_KEY: ${VULNCODE_GITHUB_PRIVATE_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: vulncode
+      POSTGRES_USER: vulncode
+      POSTGRES_PASSWORD: vulncode
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vulncode -d vulncode"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
