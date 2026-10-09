@@ -1,2 +1,0 @@
-"""VulnCode AI backend package."""
-
